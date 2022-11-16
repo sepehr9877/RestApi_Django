@@ -3,7 +3,6 @@ from rest_framework import serializers
 from .models import Products
 class ProductSerializer(serializers.Serializer):
     owner=serializers.ReadOnlyField(source='owner.username')
-    id=serializers.IntegerField()
     title=serializers.CharField()
     image=serializers.ImageField()
 
@@ -15,8 +14,12 @@ class ProductSerializer(serializers.Serializer):
         instance.save()
         return instance
 class ProductuserSerializer(serializers.ModelSerializer):
-    owner=serializers.PrimaryKeyRelatedField(many=True,queryset=Products.objects.all())
     class Meta:
-        model=User
-        fields=['id','username','owner']
+        model=Products
+        fields=[
+            'owner',
+            'title',
+            'image'
+        ]
+    
 
