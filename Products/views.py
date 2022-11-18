@@ -3,6 +3,8 @@ import json
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import render
+from rest_framework.authtoken.models import Token
+
 from .permissions import IsOwnerOrReadOnly
 # Create your views here.
 from rest_framework import status, generics, permissions,mixins
@@ -104,7 +106,7 @@ class ProductUserEndPoint(generics.ListAPIView,
                           mixins.UpdateModelMixin,
                           mixins.DestroyModelMixin,
                           mixins.CreateModelMixin):
-    lookup_field = ['q','ID']
+    permission_classes = (IsOwnerOrReadOnly,)
     serializer_class =ProductuserSerializer
     queryset = Products.objects.all()
     passed_id=None
@@ -117,11 +119,16 @@ class ProductUserEndPoint(generics.ListAPIView,
         return searched_item
     def get_object(self):
         id=self.request.GET.get('id')
+
         obj=None
-        if id:
-            obj=self.queryset.get(id=id)
+        print("passd")
+        print(self.passed_id)
+        if id is not None:
+            print("entering id")
+            obj=self.queryset.get(id=int(id))
         if self.passed_id:
-            obj=self.queryset.get(id=self.passed_id['id'])
+            obj=self.queryset.get(id=self.passed_id)
+        print(obj)
         return obj
     def is_json(self,mydata):
         try:
@@ -132,10 +139,11 @@ class ProductUserEndPoint(generics.ListAPIView,
     def get(self, request, *args, **kwargs):
         self.passed_id=self.request.GET.get('id')
         json_data=None
-        print(self.request.body)
+        print(self.is_json(self.request.body))
         if self.is_json(self.request.body):
+            print("enter")
             json_data=json.loads(self.request.body)
-            self.passed_id=json_data
+            self.passed_id=json_data['id']
         if self.passed_id is not None:
             return self.retrieve(request, *args, **kwargs)
         return super().get(request, *args, **kwargs)
