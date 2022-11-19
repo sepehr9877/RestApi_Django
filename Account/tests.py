@@ -5,16 +5,29 @@ import json
 import unittest
 import requests
 class TestAccount(unittest.TestCase):
+
     def setUp(self):
-        self.account_url="http://127.0.0.1:8000/AccountApi"
+        self.detail_url="http://127.0.0.1:8000/GetAccountDetail/"
         self.register_url="http://127.0.0.1:8000/Register/"
+        self.login_url="http://127.0.0.1:8000/LoginPage/"
         self.headers={}
+        self.user_id=None
         self.headers['content-type']="application/json"
-    def test_getmethod_getalluser(self):
+    def test_login(self):
+        method="post"
+        data={"username":"sepehr",
+              "password":"sepehr12345"}
+        response=requests.request(method=method,url=self.login_url,data=json.dumps(data),headers=self.headers)
+        print(response.text)
+    def test_get_all_detail(self):
         method="get"
-        data=requests.request(method=method,url=self.account_url,headers=self.headers)
-        json_data=json.loads(data.text)
-        print(json_data)
+        print("userd")
+        data={"id":"1"}
+        response=requests.request(method=method,url=self.detail_url,data=json.dumps(data),headers=self.headers)
+        respond_data=json.loads(response.text)
+        for item in respond_data:
+            for key in item:
+                print(item[key])
     def test_create_user(self):
         method="post"
         with open('images/user.jpg','rb') as imagefile:

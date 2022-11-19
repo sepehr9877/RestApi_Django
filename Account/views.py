@@ -1,12 +1,15 @@
 import json
 
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import mixins
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView,RetrieveAPIView
 from Account.models import AccountUser
-from .serializers import AccountSerializer,Register_Account
+from .serializers import AccountSerializer,Register_Account,LoginSerializer,UserDetail
 from .permissions import AccountPermission
 from rest_framework import permissions
 class SuperAccount(ListAPIView):
@@ -16,12 +19,6 @@ class SuperAccount(ListAPIView):
     def get_queryset(self):
         self.queryset=AccountUser.objects.all()
         return self.queryset
-class AccountUserList(SuperAccount,
-                      mixins.ListModelMixin):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    def get(self, request, *args, **kwargs):
-        print("get")
-        return self.list(request,*args,**kwargs)
 class RegisterAccount(SuperAccount,
                       mixins.CreateModelMixin):
     permission_classes=(permissions.AllowAny,)
@@ -40,3 +37,56 @@ class RegisterAccount(SuperAccount,
                 print("enter valid")
                 self.serializer_class.create(self=Register_Account(data=data),validated_data=data)
         return self.create(request,*args,**kwargs)
+class LoginPageRequest(SuperAccount
+                        ,mixins.CreateModelMixin):
+    serializer_class = LoginSerializer
+    permission_classes = (AccountPermission,)
+    queryset = User.objects.all()
+    def get_queryset(self):None
+    def post(self,request,*args,**kwargs):
+        print("enter")
+        print(self.request.data)
+        data=self.request.data
+        username,password=self.serializer_class.validate(self=LoginSerializer(),data=data)
+        authenticated_user=authenticate(self.request,username=username,password=password)
+        if authenticated_user:
+            login(request=self.request,
+                  user=authenticated_user)
+            return HttpResponse(self.request.user.id, content_type='text/plain')
+        else:
+            return HttpResponse("Bad Request", content_type='text/plain')
+class GetAccountDetail(SuperAccount,
+                       mixins.ListModelMixin,
+                       mixins.UpdateModelMixin):
+    permission_classes = (AccountPermission,)
+    serializer_class = UserDetail
+    user_id=None
+    def get_queryset(self):
+        queryset = None
+        if not self.user_id:
+            user_id=self.request.user.id
+            print("request")
+            if not user_id:
+
+                return None
+            if self.request.user.is_superuser:
+                queryset=User.objects.all()
+            else:
+                queryset=User.objects.filter(id=user_id)
+        else:
+            selected_user=User.objects.filter(id=self.user_id).first()
+            if selected_user.is_superuser:
+                queryset=User.objects.all()
+            else:
+                queryset=selected_user
+        return queryset
+    def get(self, request, *args, **kwargs):
+        print("enter to get")
+        data=self.request.data
+        print("data")
+        print(data)
+        if data:
+            self.user_id=data['id']
+            print("get id")
+            print(self.user_id)
+        return self.list(request,*args,**kwargs)
