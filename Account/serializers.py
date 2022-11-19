@@ -1,3 +1,4 @@
+
 from django.contrib.auth.models import User
 
 from .models import AccountUser
@@ -53,7 +54,28 @@ class Register_Account(serializers.Serializer):
                                                        phone=phone,
                                                           )
             return created_account
+
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model=AccountUser
-        fields=['useraccount','image','country','phone']
+        fields=['id','image','country','phone','useraccount']
+class UserDetail(serializers.ModelSerializer):
+    UserDetailSpec=AccountSerializer(read_only=True,many=True)
+    class Meta:
+        model=User
+        fields=['id','username','email','password','UserDetailSpec']
+class LoginSerializer(serializers.Serializer):
+    username=serializers.CharField()
+    password=serializers.CharField()
+    def validate(self,data):
+        username=data.get('username')
+        password=data.get('password')
+        selected_user=User.objects.filter(username=username)
+        print(selected_user)
+        if not selected_user:
+            raise serializers.ValidationError("Wrong Username or Password")
+        else:
+            return username,password
+    def create(self, validated_data):
+        print("Create")
+        pass
