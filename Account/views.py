@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render
 
 # Create your views here.
@@ -27,11 +29,14 @@ class RegisterAccount(SuperAccount,
     queryset = None
     def get_queryset(self):None
     def post(self,request,*args,**kwargs):
+        serializer=Register_Account(data=self.request.data or self.request.FILES)
+        print(self.request.FILES['image'])
         data=self.request.data
         if data:
             self.serializer_class.validate_email(Register_Account(),value=data['email'])
             self.serializer_class.validate(Register_Account(),data=data)
             self.serializer_class.validate_username(Register_Account(),value=data['username'])
-            self.serializer_class.is_valid(self=Register_Account())
-            self.serializer_class.create(self=Register_Account(),validated_data=data)
+            if serializer.is_valid():
+                print("enter valid")
+                self.serializer_class.create(self=Register_Account(data=data),validated_data=data)
         return self.create(request,*args,**kwargs)

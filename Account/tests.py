@@ -10,23 +10,25 @@ class TestAccount(unittest.TestCase):
         self.register_url="http://127.0.0.1:8000/Register/"
         self.headers={}
         self.headers['content-type']="application/json"
-    # def test_getmethod_getalluser(self):
-    #     method="get"
-    #     data=requests.request(method=method,url=self.account_url,headers=self.headers)
-    #     json_data=json.loads(data.text)
-    #     print(json_data)
+    def test_getmethod_getalluser(self):
+        method="get"
+        data=requests.request(method=method,url=self.account_url,headers=self.headers)
+        json_data=json.loads(data.text)
+        print(json_data)
     def test_create_user(self):
         method="post"
-        image=os.path.join('images/user.jpg')
-        data={
-            "country": "USA",
-            "username": "Harry",
-            "firstname": "Harry",
-            "password": "Harry12345",
-            "repassword": "Harry12345",
-            "image": image,
-            "phone":None,
-            "email": "harry@yahoo.com"
-        }
-        requests.request(method=method,url=self.register_url,data=json.dumps(data),headers=self.headers)
+        with open('images/user.jpg','rb') as imagefile:
+            data={
+                "country": "USA",
+                "username": "Harry",
+                "firstname": "Harry",
+                "password": "Harry12345",
+                "repassword": "Harry12345",
+                "phone":None,
+                "email": "harry@yahoo.com"
+            }
+            file={'image':imagefile}
+            response=requests.request(method=method,url=self.register_url,data=data,files=file,headers={})
+            print(response.text)
+
 # Create your tests here.
