@@ -56,8 +56,7 @@ class LoginPageRequest(SuperAccount
         else:
             return HttpResponse("Bad Request", content_type='text/plain')
 class GetAccountDetail(SuperAccount,
-                       mixins.ListModelMixin,
-                       mixins.UpdateModelMixin):
+                       mixins.ListModelMixin):
     permission_classes = (AccountPermission,)
     serializer_class = UserDetail
     user_id=None
@@ -65,7 +64,6 @@ class GetAccountDetail(SuperAccount,
         queryset = None
         if not self.user_id:
             user_id=self.request.user.id
-            print("request")
             if not user_id:
 
                 return None
@@ -90,3 +88,20 @@ class GetAccountDetail(SuperAccount,
             print("get id")
             print(self.user_id)
         return self.list(request,*args,**kwargs)
+
+
+
+class UpdateDetail(SuperAccount,
+                   mixins.RetrieveModelMixin,
+                   mixins.UpdateModelMixin):
+    serializer_class = UserDetail
+    lookup_field = 'id'
+
+    def get_queryset(self,*args,**kwargs):
+        id=self.kwargs['id']
+        queryset=User.objects.filter(id=id).all()
+        return queryset
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
+    def put(self,request,*args,**kwargs):
+        return self.update(request,*args,**kwargs)
