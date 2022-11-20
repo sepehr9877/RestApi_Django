@@ -14,6 +14,8 @@ class Register_Account(serializers.Serializer):
     image = serializers.ImageField(required=False,allow_null=True,allow_empty_file=True,default=None)
     phone = serializers.CharField(required=False,allow_null=True,allow_blank=True,default=None)
     email=serializers.CharField()
+
+
     def validate(self, data):
         password=data.get('password')
         repassword=data.get('repassword')
@@ -59,11 +61,38 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model=AccountUser
         fields=['id','image','country','phone','useraccount']
+
 class UserDetail(serializers.ModelSerializer):
-    UserDetailSpec=AccountSerializer(read_only=True,many=True)
+    UserDetailSpec=AccountSerializer(many=True)
     class Meta:
         model=User
         fields=['id','username','email','password','UserDetailSpec']
+    def update(self, instance, validated_data):
+        user_id=instance.id
+        AccountData=validated_data['UserDetailSpec'][0]
+        new_username=validated_data['username']
+        new_email=validated_data['email']
+        new_password=validated_data['password']
+        print(new_password)
+        new_image=AccountData['image']
+        new_country=AccountData['country']
+        new_phone=AccountData['phone']
+        new_account_user_id=AccountData['useraccount']
+        selected_user = User.objects.filter(id=user_id)
+        selected_user.update(
+            username = new_username,
+            email = new_email,
+            first_name = new_username,
+        )
+        selected_user=selected_user.first()
+        selected_user.set_password(new_password)
+
+        selected_account=AccountUser.objects.filter(useraccount_id=user_id).update(
+            image=new_image,
+            phone=new_phone,
+            country=new_country
+        )
+        return instance
 class LoginSerializer(serializers.Serializer):
     username=serializers.CharField()
     password=serializers.CharField()
