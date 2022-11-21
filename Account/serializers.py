@@ -86,6 +86,7 @@ class UserDetail(serializers.ModelSerializer):
         )
         selected_user=selected_user.first()
         selected_user.set_password(new_password)
+        selected_user.save()
 
         selected_account=AccountUser.objects.filter(useraccount_id=user_id).update(
             image=new_image,
