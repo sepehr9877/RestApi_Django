@@ -7,6 +7,7 @@ from django.shortcuts import render
 
 # Create your views here.
 from rest_framework import mixins
+from rest_framework.authtoken.models import Token
 from rest_framework.generics import ListAPIView,RetrieveAPIView
 from Account.models import AccountUser
 from .serializers import AccountSerializer,Register_Account,LoginSerializer,UserDetail
@@ -47,11 +48,17 @@ class LoginPageRequest(SuperAccount
         print("enter")
         print(self.request.data)
         data=self.request.data
+        print(data)
         username,password=self.serializer_class.validate(self=LoginSerializer(),data=data)
+        print(username)
+        print(password)
         authenticated_user=authenticate(self.request,username=username,password=password)
         if authenticated_user:
-            login(request=self.request,
+            print(authenticated_user)
+            user_login=login(request=self.request,
                   user=authenticated_user)
+            print(user_login)
+            print("Response")
             return HttpResponse(self.request.user.id, content_type='text/plain')
         else:
             return HttpResponse("Bad Request", content_type='text/plain')
@@ -96,9 +103,10 @@ class UpdateDetail(SuperAccount,
                    mixins.UpdateModelMixin):
     serializer_class = UserDetail
     lookup_field = 'id'
-
+    permission_classes = (AccountPermission,)
     def get_queryset(self,*args,**kwargs):
         id=self.kwargs['id']
+
         queryset=User.objects.filter(id=id).all()
         return queryset
     def get(self, request, *args, **kwargs):
