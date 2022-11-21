@@ -20,9 +20,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',include('Products.urls')),
     path('api-auth/',include('rest_framework.urls')),
     path('api_auth_toke/',include('dj_rest_auth.urls')),
     path('api_auth_toke/registration',include('dj_rest_auth.registration.urls')),
-    path('',include('Account.urls'))
+    path('', include('Account.API.urls')),
+    path('',include('Content.API.urls'))
 ]+static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)
