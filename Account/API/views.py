@@ -102,7 +102,6 @@ class UpdateDetail(SuperAccount,
     lookup_field = 'id'
     permission_classes = (AccountPermission,)
     def get_queryset(self,*args,**kwargs):
-        id=self.kwargs['id']
         queryset=User.objects.filter(id=id).all()
         return queryset
     def get(self, request, *args, **kwargs):
